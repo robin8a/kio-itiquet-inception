@@ -1,7 +1,62 @@
 
 # How to Deploy Ruby on Rails Apps on AWS EC2
 
-- [works! RVM on ubuntu](https://github.com/rvm/ubuntu_rvm)
+1. [works! RVM on ubuntu](https://github.com/rvm/ubuntu_rvm)
+   - Reboot  
+- https://itnext.io/how-to-deploy-rails-5-2-on-aws-ec2-ubuntu-nginx-passenger-cd842c1c35ee
+
+https://www.phusionpassenger.com/library/install/nginx/install/oss/bionic/
+
+```sh
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
+
+# sudo apt-key adv — keyserver hkp://keyserver.ubuntu.com:80 — recv-keys 561F9B9CAC40B2F7
+
+sudo sh -c 'echo deb https://oss-binaries.phusionpassenger.com/apt/passenger bionic main > /etc/apt/sources.list.d/passenger.list'
+
+ vim config/initializers/devise.rb 
+
+ bundle exec rake assets:precompile RAILS_ENV=production
+rake aborted!
+Devise.secret_key was not set. Please add the following to your Devise initializer:
+
+  config.secret_key = '<replace secret>'
+
+cp -a /kio-itiquet/. /var/www/kio-itiquet
+
+
+
+```
+
+```sh
+ passenger-config about ruby-command
+passenger-config was invoked through the following Ruby interpreter:
+  Command: /home/ubuntu/.rvm/gems/ruby-2.4.0/wrappers/ruby
+  Version: ruby 2.4.0p0 (2016-12-24 revision 57164) [x86_64-linux]
+  To use in Apache: PassengerRuby /home/ubuntu/.rvm/gems/ruby-2.4.0/wrappers/ruby
+  To use in Nginx : passenger_ruby /home/ubuntu/.rvm/gems/ruby-2.4.0/wrappers/ruby
+  To use with Standalone: /home/ubuntu/.rvm/gems/ruby-2.4.0/wrappers/ruby /usr/bin/passenger start
+```
+
+```sh
+sudo vim /etc/nginx/sites-enabled/kio-itiquet.conf
+```
+
+```conf
+# /etc/nginx/sites-enabled/[APP_REPOSITORY].conf
+server {
+  listen 80;
+  server_name kio-itiquet.com;
+  # Tell Nginx and Passenger where your app’s ‘public’ directory is
+  root /var/www/kio-itiquet/public;
+  # Turn on Passenger
+  passenger_enabled on;
+  passenger_ruby /home/ubuntu/.rvm/gems/ruby-2.4.0/wrappers/ruby;
+}
+```
+
+# Security group port 80
+https://www.codewithjason.com/install-nginx-passenger-ec2-instance-rails-hosting/
 
 - https://itnext.io/how-to-deploy-rails-5-2-on-aws-ec2-ubuntu-nginx-passenger-cd842c1c35ee
 - https://medium.com/@manishyadavv/how-to-deploy-ruby-on-rails-apps-on-aws-ec2-7ce55bb955fa
@@ -169,9 +224,16 @@ scp -i "kio-itiquet-kp.pem" ubuntu@ec2-18-116-36-90.us-east-2.compute.amazonaws.
    50  pwd
    51  sudo -u postgres createuser -s itiquet
    52  sudo -u postgres psql
+   https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresql-8bfcd2f4a91e
+
+   ```sql
+    sudo -u postgres createuser itiquet
+    sudo -u postgres psql
+    alter user itiquet with encrypted password 'itiqu3t$';
+   ```
    53  clear
    54  RAILS_ENV=development bundle install
-   RAILS_ENV=d bundle install
+   RAILS_ENV=production bundle install
    55  clear
    56  RAILS_ENV=development bundle exec rake db:create
    57  RAILS_ENV=development bundle exec rake db:migrate
